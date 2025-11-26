@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliates Free Generator Code</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Konfigurasi Tailwind untuk Font Poppins -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Menggunakan Poppins sebagai font utama
+                        sans: ['Poppins', 'sans-serif'],
+                        // Font untuk Kode Promo (tetap IntegralCF jika Anda memilikinya, atau fallback ke monospace)
+                        promo: ['IntegralCF', 'monospace'],
+                    },
+                    colors: {
+                        'primary': '#ECCA01', // Warna kuning/emas
+                        'dark': '#111827', // Abu-abu gelap
+                        'light-bg': '#F9FAFB', // Latar belakang sangat terang
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Load Font Poppins dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Library untuk mengambil screenshot canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Library SweetAlert2 untuk notifikasi (Ganti alert bawaan) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* --- 1. CSS: Font Kustom Integral (Path Diperbarui) --- */
+        /* Pastikan font 'IntegralCF' ini tetap tersedia jika ingin kode promo terlihat seperti yang lama. */
+        @font-face {
+            font-family: 'IntegralCF';
+            /* Ganti 'font/integral.otf' dengan path yang benar di server Anda */
+            src: url('font/integral.otf') format('opentype'); 
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        /* Override CSS Klasik dengan Utility Class (dikelola di HTML) */
+        
+        /* CSS untuk Poster Canvas - Kunci untuk html2canvas */
+        #poster-canvas {
+            width: 1080px;
+            height: 1080px;
+            /* Pastikan background dan font di dalam canvas sesuai desain Anda */
+            background-color: #1B160D; /* Tetap gelap untuk poster */
+            position: absolute; 
+            top: 0; 
+            left: 0;
+            transform-origin: top left;
+            overflow: hidden;
+        }
+        
+        /* Rasio kotak preview agar terlihat seperti persegi (1:1) */
+        #previewContainer::before {
+            content: '';
+            display: block;
+            padding-top: 100%; /* Membuat tinggi sama dengan lebar */
+        }
+
+    </style>
+</head>
+<!-- Perbaikan kecil di body: hapus justify-center agar konten mengalir lebih baik di HP -->
+<body class="bg-light-bg font-sans min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+    <!-- Tambahkan py-8 untuk padding vertikal di desktop, dan flex-wrap untuk fallback -->
+    <div class="w-full max-w-5xl flex flex-col lg:flex-row gap-8 py-4 lg:py-8 flex-wrap">
+        
+        <!-- Panel Kontrol Input -->
+        <!-- Gunakan margin-auto untuk memastikan panel input terpusat jika lebar layarnya ganjil -->
+        <div class="lg:w-1/2 w-full bg-white border border-gray-200 p-6 sm:p-8 rounded-xl shadow-lg h-fit mx-auto">
+            
+            <h1 class="text-2xl font-bold text-dark mb-6 border-b pb-3">
+                Generator Poster Promo
+            </h1>
+            
+            <!-- Grup Input -->
+            <div class="mb-6">
+                <label for="codeField" class="text-sm font-semibold text-gray-600 mb-2 block">
+                    Masukkan Kode Promo
+                </label>
+                <input 
+                    type="text" 
+                    id="codeField" 
+                    value="ALLYNC10" 
+                    maxlength="12"
+                    class="w-full p-4 text-2xl text-center bg-gray-50 border-2 border-transparent text-dark rounded-xl uppercase font-extrabold focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-200 tracking-wider"
+                >
+            </div>
+
+            <!-- Tombol Download -->
+            <button id="downloadBtn" class="w-full bg-dark text-white font-semibold py-3 px-6 rounded-full hover:bg-gray-800 transition duration-300 flex justify-center items-center gap-2 shadow-md hover:shadow-lg">
+                <i class="fas fa-download"></i> Download Hasil
+            </button>
+            
+            <p class="text-xs text-gray-500 mt-4 text-center">
+                Resolusi poster: 1080x1080 px (1:1)
+            </p>
+        </div>
+
+        <!-- Area Preview Poster -->
+        <!-- Gunakan margin-auto agar preview tetap di tengah saat di desktop dan hanya menempati 1/2 layar -->
+        <div class="lg:w-1/2 w-full relative mx-auto">
+            <div id="previewContainer" class="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-white border-4 border-white">
+                
+                <!-- Poster Canvas (1080x1080 di-scale ke lebar container) -->
+                <div id="poster-canvas">
+                    
+                    <!-- Background Image Container -->
+                    <!-- KESALAHAN INI KARENA FILE 'images/Drops.png' TIDAK DAPAT DIAKSES OLEH HTML2CANVAS. -->
+                    <!-- KINI KITA GUNAKAN ID AGAR BISA DISET MELALUI JAVASCRIPT DENGAN URL EKSTERNAL -->
+                    <!-- MENGHILANGKAN EFEK GELAP SESUAI PERMINTAAN USER -->
+                    <div id="poster-bg" class="absolute inset-0 z-0 bg-cover bg-center">
+                        <!-- Overlay untuk menggelapkan (telah dihapus) -->
+                    </div>
+                    
+
+
+                    <!-- Konten Kode Promo -->
+                    <!-- PERUBAHAN UTAMA DI SINI: top-1/2 diubah menjadi top-[45%] untuk menggeser ke atas -->
+                    <div id="posterContent" class="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full z-10 pointer-events-none">
+                        <h1 id="displayCode" class="text-[7rem] font-promo leading-none m-0 uppercase text-[#c7ffc0] shadow-2xl whitespace-nowrap tracking-tighter">
+                            DISKON50
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elemen DOM
+            const codeField = document.getElementById('codeField');
+            const displayCode = document.getElementById('displayCode');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const posterCanvas = document.getElementById('poster-canvas');
+            const previewContainer = document.getElementById('previewContainer');
+            const posterBg = document.getElementById('poster-bg');
+
+            // --- PENTING: GANTI DENGAN URL GAMBAR DROPS.PNG ANDA YANG SUDAH DI-UPLOAD DI IMGUR/HOSTING LAIN ---
+            // Catatan: Jika URL gambar tidak memiliki header CORS yang benar, html2canvas masih bisa gagal.
+            // Gunakan gambar placeholder yang diketahui aman untuk pengujian.
+            const backgroundImageURL = 'https://i.imgur.com/KKtriL8.png'; 
+            // ATAU:
+            // const backgroundImageURL = 'URL_PUBLIC_GAMBAR_DROPS.PNG_ANDA'; 
+
+
+            // Atur gambar latar belakang melalui JavaScript (mempermudah debugging)
+            posterBg.style.backgroundImage = `url('${backgroundImageURL}')`;
+            // Baris di bawah ini tidak lagi diperlukan karena kelas 'opacity-50' dan 'bg-dark' sudah dihapus di HTML.
+            // posterBg.classList.remove('opacity-50', 'bg-dark'); 
+
+            // --- 1. Update Teks Realtime ---
+            function updateText() {
+                let text = codeField.value.toUpperCase().trim();
+                // Jika input kosong, tampilkan placeholder 'KODE'
+                if (text === '') text = 'KODE'; 
+                displayCode.innerText = text;
+            }
+            codeField.addEventListener('input', updateText);
+
+            // --- 2. Scaling Preview Responsif ---
+            function resizePreview() {
+                // Ambil lebar container preview
+                const containerWidth = previewContainer.offsetWidth;
+                const originalWidth = 1080; 
+                // Hitung skala
+                const scale = containerWidth / originalWidth;
+                
+                // Terapkan skala pada canvas
+                posterCanvas.style.transform = `scale(${scale})`;
+            }
+            // Tambahkan listener untuk resize dan panggil saat load
+            window.addEventListener('resize', resizePreview);
+            // Panggil setelah DOM dimuat dan setelah rendering awal (menggunakan setTimeout)
+            setTimeout(resizePreview, 100);
+
+            // Fungsi utilitas untuk Base64 ke ArrayBuffer (untuk audio, tidak diperlukan di sini, tapi bagus untuk referensi)
+            function base64ToArrayBuffer(base64) {
+                const binaryString = window.atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            }
+
+            // Fungsi utilitas untuk konversi PCM ke WAV (untuk audio, tidak diperlukan di sini)
+            function pcmToWav(pcm16, sampleRate) {
+                // ... (Fungsi ini dihilangkan karena tidak relevan dengan html2canvas/image generator)
+                // Implementasi ini hanya relevan untuk API TTS.
+                // ...
+            }
+
+            // Fungsi untuk menampilkan notifikasi yang aman
+            function showNotification(icon, title, text, timer = 0) {
+                 if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: icon,
+                        title: title,
+                        text: text,
+                        confirmButtonColor: '#111827', // dark color
+                        timer: timer > 0 ? timer : undefined,
+                        timerProgressBar: timer > 0,
+                    });
+                } else {
+                    // Fallback sederhana jika SweetAlert2 tidak terload
+                    console.log(`[${title}] ${text}`);
+                }
+            }
+
+
+            // --- 3. Download Gambar (Menggunakan html2canvas) ---
+            downloadBtn.addEventListener('click', function() {
+                const originalBtnContent = downloadBtn.innerHTML;
+                
+                // Status Loading
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                downloadBtn.disabled = true;
+
+                const options = {
+                    // Gunakan skala 1 untuk memastikan resolusi 1080x1080 asli
+                    scale: 1, 
+                    backgroundColor: null, 
+                    // PENTING: useCORS HARUS TRUE untuk memproses gambar dari URL eksternal
+                    useCORS: true, 
+                    allowTaint: true,
+                    logging: false 
+                };
+
+                html2canvas(posterCanvas, options).then(canvas => {
+                    // Buat link download
+                    const link = document.createElement('a');
+                    link.download = 'Promo-' + (codeField.value || 'KODE') + '.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    // Kembalikan status tombol
+                    downloadBtn.innerHTML = originalBtnContent;
+                    downloadBtn.disabled = false;
+                    
+                    // Notifikasi sukses
+                    showNotification('success', 'Berhasil!', 'Poster telah disimpan ke perangkat Anda.', 2000);
+
+                }).catch(err => {
+                    console.error("Gagal menyimpan gambar:", err);
+                    // Notifikasi gagal
+                    showNotification('error', 'Gagal!', 'Terjadi kesalahan saat menyimpan gambar. Pastikan URL gambar latar belakang publik dan mendukung CORS.', 0);
+                    
+                    // Kembalikan status tombol
+                    downloadBtn.innerHTML = originalBtnContent;
+                    downloadBtn.disabled = false;
+                });
+            });
+            
+            // Inisialisasi teks awal saat halaman dimuat
+            updateText();
+        });
+    </script>
+</body>
+</html>
